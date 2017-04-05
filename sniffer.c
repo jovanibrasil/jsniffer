@@ -25,6 +25,7 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
+#include <netinet/ip_icmp.h>
 #include <netinet/in.h> 
 #include <arpa/inet.h> 
 
@@ -47,18 +48,19 @@
  *
  * v Ethernet
  * 
- * TODO Arp
+ * v Arp
  * v IPv4
+ *
  * TODO IPv6
- * 
- * TODO ICMP - 0x01
+ * v ICMP - 0x01
  * TODO ICMPv6 - 0x3A
+ * 
  * v UDP - 0x11
- * TODO TCP -0x06
+ * v TCP -0x06
  *
  * TODO PT2
  *
- * TODO PT3
+ * estatística
  *
  *
  *
@@ -93,16 +95,17 @@ void print_values(unsigned  char *buff, int offset, int length){
  * */
 
 void get_udp(unsigned char *buff, int offset){
-	printf("\n    >UDP HEADER\n");
+	
+	printf("\n        >UDP HEADER\n");
 	
 	struct udphdr udp_header;
 
 	memcpy(&udp_header, &buff[offset], sizeof(udp_header));
 
-	printf("    Source port = %x", udp_header.uh_sport);
-	printf("    Destination Port =  %x\n", udp_header.uh_dport);
-	printf("    Length = %x", udp_header.uh_ulen);
-	printf("    Checksum = %x", udp_header.uh_sum);
+	printf("        Source port = %x", udp_header.uh_sport);
+	printf("        Destination Port =  %x\n", udp_header.uh_dport);
+	printf("        Length = %x", udp_header.uh_ulen);
+	printf("        Checksum = %x", udp_header.uh_sum);
 
 	// TODO
 	// Here we need to know what applications are sending and receiving this 
@@ -110,25 +113,72 @@ void get_udp(unsigned char *buff, int offset){
 
 }
 
-/*
- * TODO 
- *
- *
- *
- *
- *
- *
- *
- *
+/* 0      4         78                16			    31
+ * -------------------------------------------------------------------
+ * |        	 Source Port	     |       Destination Port	     |
+ * -------------------------------------------------------------------
+ * |	       	              Sequence Number			     |
+ * -------------------------------------------------------------------
+ * |	            Acknowledgment number (if ACK set)               |
+ * -------------------------------------------------------------------
+ * | Data |  	   |N|C|E|U|A|P|R|S|F|				     |
+ * |Offset|Reserved|S|W|C|R|C|S|S|Y|I|		Window Size          |
+ * |	  |	   | |R|E|G|K|H|T|N|N|				     |
+ * -------------------------------------------------------------------
+ * |		Checksum	     |	  Urgent Pointer (if URG set)|
+ * -------------------------------------------------------------------
+ * |			Option (if data offset > 5)		     |
+ * |	     (Padded at the end with "0" bytes if necessary.)        |
+ * -------------------------------------------------------------------
  */
 
 void get_tcp(unsigned char *buff, int offset){
-	printf("\n    >TCP HEADER\n");
+	
+	printf("\n        >TCP HEADER\n");
+
+	struct tcphdr tcp_header;
+
+	memcpy(&tcp_header, &buff,sizeof(tcp_header));
+
+	printf("        Source Port = %x ");
+	printf("Destination Port = %x \n");
+	printf("        Sequence Number = %x \n");
+	printf("        Acknowledment number = %x \n");
+	printf("        Data Offset = %x ");
+	printf("Reserved = %x ");
+	// TODO flags
+	printf("Flags = %x ");
+	printf("Window Size = %x \n");
+	printf("        Checksum = %x ");
+	printf("Urgent Pointer = %x \n");
+	printf("        Option %x \n");
 
 }
 
+/*
+ *
+ * 0	        8          16			  31
+ * -------------------------------------------------
+ * |	Type   |   Code   |        Checksum        |
+ * -------------------------------------------------
+ * |		   Rest of Header                  |
+ * -------------------------------------------------
+ *
+ */
+
 void get_icmp(unsigned char *buff, int offset){
-	printf("\n    >ICMP HEADER\n");
+	
+	printf("\n      >ICMP HEADER\n");
+
+	struct icmphdr icmp_header;
+
+	memcpy(&icmp_header, &buff, sizeof(icmp_header));
+
+	printf("      Type = %x ", icmp_header.type);
+	printf("Code = %x ", icmp_header.code);
+	printf("      Checksum = %x \n", icmp_header.checksum);
+
+	// TODO Rest of the header
 
 }
 
@@ -154,32 +204,40 @@ void get_icmp(unsigned char *buff, int offset){
 
 void get_ipv4(unsigned char *buff, int offset){
 
-	printf("  >IPV4 HEADER\n");
+	printf("    >IPV4 HEADER\n");
 
 	struct ip ip_header;    	
 
 	// Allocates a default 20 bytes header space
 	memcpy(&ip_header, &buff[offset] , sizeof(ip_header));
 	
-	printf("  Version = %x ", ip_header.ip_v);
+	printf("    Version = %x ", ip_header.ip_v);
 	printf("IHL = %x ", ip_header.ip_hl);
 	printf("DSCP = %x ", ip_header.ip_tos);
 	printf("ECN = ");
 	printf("Total Length = %x \n", ip_header.ip_len);
 	
-	printf("  Identification = %x ", ip_header.ip_id);
+	printf("    Identification = %x ", ip_header.ip_id);
 	printf("Flags = ");
 	printf("Fragment Offset = %x \n", ip_header.ip_off);
 	
-	printf("  Time To Live =  %x ", ip_header.ip_ttl);
+	printf("    Time To Live =  %x ", ip_header.ip_ttl);
 	printf("Protocol = %x ", ip_header.ip_p);
 	printf("Header Checksum = %x \n", ip_header.ip_sum);
 	
-	printf("  Source IP Address = %x \n", ip_header.ip_src.s_addr);
+	printf("    Source IP Address = %x \n", ip_header.ip_src.s_addr);
 
-	printf("  Destination IP Address = %x \n", ip_header.ip_dst.s_addr);	
+	printf("    Destination IP Address = %x \n", ip_header.ip_dst.s_addr);	
 
-	//offfset +=  
+	//printf("----\n");
+	//printf("ihl hex = %x\n",ip_header.ip_hl);
+	
+	//printf("ihl dec = %d\n",ip_header.ip_hl);
+	
+	//printf("offset sum = %d\n",ip_header.ip_hl + offset);
+	//printf("-------\n");
+	
+	offset += ip_header.ip_hl * 4;
 
 	//printf("%d - %x \n", ip_header.ip_p, ip_header.ip_p);
 		
@@ -203,7 +261,8 @@ void get_ipv4(unsigned char *buff, int offset){
 }
 
 void get_ipv6(unsigned char *buff, int offset){
-	printf("  >IPv6. \n\n");
+	
+	printf("    >IPv6. \n\n");
 
 }
 
@@ -248,22 +307,23 @@ void get_ipv6(unsigned char *buff, int offset){
  */
 
 void get_arp(unsigned char *buff, int offset){
-	printf("  >ARP. \n\n");
+	
+	printf("    >ARP. \n");
 
 	struct ether_arp arp_header;
 
 	memcpy(&arp_header, &buff[offset], sizeof(arp_header));
 
-	printf("Hardware Type = %x", arp_header.ea_hdr.ar_hrd);
-	printf("Protocol Type = %x", arp_header.ea_hdr.ar_pro);
-	printf("Hardware Address Length = %x", arp_header.ea_hdr.ar_hln);
-	printf("Protocol Address Length = %x", arp_header.ea_hdr.ar_pln);
-	printf("Operation = %x \n", arp_header.ea_hdr.ar_op);
+	printf("    Hardware Type = %x\n", arp_header.ea_hdr.ar_hrd);
+	printf("    Protocol Type = %x\n", arp_header.ea_hdr.ar_pro);
+	printf("    Hardware Address Length = %x ", arp_header.ea_hdr.ar_hln);
+	printf("    Protocol Address Length = %x\n", arp_header.ea_hdr.ar_pln);
+	printf("    Operation = %x \n", arp_header.ea_hdr.ar_op);
 	// TODO This types are strange
-	printf("Sender Hardware Address = %x \n", arp_header.arp_sha);
-	printf("Sender Protocol Address = %x \n", arp_header.arp_spa);
-	printf("Target Hardware Address = %x \n", arp_header.arp_tha);
- 	printf("Target Protocol Address = %x \n", arp_header.arp_tpa);	
+	printf("    Sender Hardware Address = %x \n", arp_header.arp_sha);
+	printf("    Sender Protocol Address = %x \n", arp_header.arp_spa);
+	printf("    Target Hardware Address = %x \n", arp_header.arp_tha);
+ 	printf("    Target Protocol Address = %x \n", arp_header.arp_tpa);	
 
 }
 
@@ -291,7 +351,7 @@ void get_ethernet(unsigned char *buff){
 
 	memcpy(&ethernet_header, buff, sizeof(ethernet_header));
 
-	// print_values(buff, 0, 6);
+	//print_values(buff, 0, 40);
 
 	printf("MAC Destino: %x:%x:%x:%x:%x:%x \n", buff[0],buff[1],buff[2],buff[3],buff[4],buff[5]);
 	
@@ -317,6 +377,7 @@ void get_ethernet(unsigned char *buff){
 			get_ipv6(buff, offset);
 			break;
 		case ETHERTYPE_ARP:
+			//printf("-------------------------------------------------------------------------->");
 			get_arp(buff, offset);
 			break;
 		default:
@@ -358,7 +419,7 @@ int main(int argc,char *argv[]){
 
 	// recepcao de pacotes
 	while (1) {
-		printf("\n\n------------------------------------------------\n");
+		printf("\n\n---------------------------------------------------------------------\n");
 		recv(sockd, (char *) &buff, sizeof(buff), 0x0);
 		// impressão do conteudo - exemplo Endereco Destino e Endereco Origem
 		process_data(buff);		
