@@ -1,6 +1,22 @@
-/*-------------------------------------------------------------*/
-/* Exemplo Socket Raw - Captura pacotes recebidos na interface */
-/*-------------------------------------------------------------*/
+/*
+ *
+ * 			 PUCRS - Faculdade de Informática
+ * 			Disciplina de Laboratório de Redes
+ *
+ * Trabalho 1 - 2017/1
+ *
+ * Autor: jovani Brasil	
+ * Email: jovanibrasil@gmail.com
+ *
+ * 
+ * A ideia deste trabalho é implementar um sniffer capaz de capturar, mostrar 
+ * e gerar estatísticas sobre os pacotes que trafegam na rede.
+ *
+ * Esta implementação partiu da implementação disponibilizada pela professora.
+ *
+ *
+ *
+ */
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -23,50 +39,157 @@
 #include <netinet/in_systm.h> 
 #include <netinet/ether.h> 
 #include <netinet/ip.h>
+#include <netinet/ip6.h>
 #include <netinet/udp.h>
 #include <netinet/tcp.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <netinet/in.h> 
 #include <arpa/inet.h> 
 
+#define PORTS 65536
 #define BUFFSIZE 1518
 
+// Estrutura auxiliar para contagem de endereços
+struct ipv4_node {
+	char ip[16];
+	int rcounter;
+	int tcounter;
+	struct ipv4_node *next;
+};
+
+// Contadores de endereços
+struct ipv4_node *ipv4_listhead;
+
+// Contadores de pacotes
+int total_packets;
+int count_ipv4;	
+int count_ipv6;
+int count_udp;
+int count_tcp;
+int count_icmp4;
+int count_icmp6;
+int count_arp;
+int count_ethernet;
+
+// Contador de transmissão pelas portas 
+int tports[PORTS];
+// Contador de recepção pelas portas
+int rports[PORTS];
+
 /*
- * PQ buffsize com 1518?
- *	Pois eh o tamanho maximo de um frame ethernet, dado os 14 bytes de ethernet header,
- *	4 bytes de CRC Checksum, e de 46  1500 bytes de dados (payload). 
- *
- * Como funciona a fragmentacao?
- *
- *
- * Iteration 1
- *
- *
- * TODO PT1
- *
- * Cabecalhos que devem ser capturados pelo Sniffer: 
- *
- * v Ethernet
  * 
- * v Arp
- * v IPv4
+ * Adiciona um elemento da lista de contagem das estatísticas de IP. 
+ * Uma possível otimização seria a implementação de uma fila de pri-
+ * oridades.
  *
- * TODO IPv6
- * v ICMP - 0x01
- * TODO ICMPv6 - 0x3A
- * 
- * v UDP - 0x11
- * v TCP -0x06
+ * TODO Otimizar.
  *
- * TODO PT2
+ */
+void insert_ipv4(char ip[16], int counter){
+	
+	// Lista vazia, inicializa
+	if(ipv4_listhead == NULL){
+		ipv4_listhead = malloc(sizeof(struct ipv4_node));
+		memcpy(ipv4_listhead->ip, ip, 16 * sizeof(char));
+		if(counter)
+			ipv4_listhead->rcounter = 1;
+		else
+			ipv4_listhead->tcounter = 1;
+		//ipv4_listhead->next = NULL;	
+		//printf("Elemento adicionado: %s \n", ipv4_listhead->ip);	
+		return;
+	}
+
+	// Procura elemento na lista de elementos
+	struct ipv4_node *node = ipv4_listhead; 
+	while(node != NULL){
+		//printf("%s == %s \n\n", node->ip, ip);
+		if(strcmp(node->ip, ip) == 0){
+			if(counter)
+				ipv4_listhead->rcounter += 1;
+			else
+				ipv4_listhead->tcounter += 1;
+			//printf("Elemento atualizado --------------------------_>\n");
+			return;
+		}
+		node = node->next;
+	}
+
+	// Se não achou, cria um elemento e adiciona no inicio
+	node = malloc(sizeof(struct ipv4_node));
+	memcpy(node->ip, ip, 16 * sizeof(char));
+	if(counter)
+		node->rcounter = 1;
+	else
+		node->tcounter = 1;
+	//printf("Elemento adicionado: %s \n", node->ip);	
+	node->next = ipv4_listhead;
+	
+	ipv4_listhead = node;
+	
+	return;
+}
+
+/*
  *
- * estat�stica
  *
  *
  *
- *
- *
- *
+ */
+
+void print_statistics(){
+
+	system("clear");	
+	
+	// Percentuais de transmissão de diferentes tipos de pacotes.
+
+	printf("Total de pacotes capturados %d.\n", total_packets);
+	printf("Pacotes ARP: %d.\n", count_arp);
+	printf("Pacotes IPv4: %d.\n", count_ipv4);
+	printf("Pacotes IPv6: %d.\n", count_ipv6);
+	printf("Pacotes ICMPv4: %d.\n", count_icmp4);
+	printf("Pacotes ICMPv6: %d.\n", count_icmp6);
+	printf("Pacotes TCP: %d.\n", count_tcp);
+	printf("Pacotes UDP: %d.\n", count_udp);
+
+	// Protocolos de aplicações que mais enviaram e receberam pacotes.
+	int i = 0;
+	int tmax = 0; // Protocolo que mais transmitiu.
+	int rmax = 0; // Protocolo que mais recebeu.
+	for(i; i<PORTS; i++){
+		if(tports[i] > tmax)
+			tmax = i;
+		if(rports[i] > rmax)
+			rmax = i;	
+	}
+	
+	printf("Protocolo de aplicação mais usado:\n");
+	printf("Para transmissões: %d\n", tmax);
+	printf("Para recepções: %d\n", rmax);
+
+	// IP dos dispositivos que mais enviaram e receberam pacotes.
+	struct ipv4_node *node = ipv4_listhead;
+	struct ipv4_node *maxrc = ipv4_listhead, *maxtc = ipv4_listhead;
+	while(node != NULL){
+		// printf("%s   %d   \n ", node->ip, node->rcounter);
+		if(node->rcounter > maxrc->rcounter)
+			maxrc = node;
+		if(node->tcounter > maxrc->tcounter)
+			maxtc = node;
+		
+		node = node->next;
+	}
+
+	printf("IP's mais utilizados para comunicação:\n");
+	printf("Para transmissões: %s\n", maxtc->ip);
+	printf("PAra recepções: %s\n", maxrc->ip);
+			
+
+}
+
+
+/*
  *
  *
  *
@@ -97,19 +220,17 @@ void print_values(unsigned  char *buff, int offset, int length){
 void get_udp(unsigned char *buff, int offset){
 	
 	printf("\n        >UDP HEADER\n");
-	
-	struct udphdr udp_header;
+	count_udp += 1;
 
+	struct udphdr udp_header;
 	memcpy(&udp_header, &buff[offset], sizeof(udp_header));
 
-	printf("        Source port = %x", udp_header.uh_sport);
-	printf("        Destination Port =  %x\n", udp_header.uh_dport);
-	printf("        Length = %x", udp_header.uh_ulen);
-	printf("        Checksum = %x", udp_header.uh_sum);
-
-	// TODO
-	// Here we need to know what applications are sending and receiving this 
-	// package, respectivealy.
+	printf("        Source port = %d", udp_header.source);
+	tports[udp_header.source] += 1;	
+	printf("        Destination Port =  %d\n", udp_header.dest);
+	rports[udp_header.dest] += 1;
+	printf("        Length = %d", udp_header.len);
+	printf("        Checksum = %d", udp_header.check);
 
 }
 
@@ -135,29 +256,38 @@ void get_udp(unsigned char *buff, int offset){
 void get_tcp(unsigned char *buff, int offset){
 	
 	printf("\n        >TCP HEADER\n");
+	count_tcp += 1;
 
 	struct tcphdr tcp_header;
-
 	memcpy(&tcp_header, &buff,sizeof(tcp_header));
 
-	printf("        Source Port = %x ");
-	printf("Destination Port = %x \n");
-	printf("        Sequence Number = %x \n");
-	printf("        Acknowledment number = %x \n");
-	printf("        Data Offset = %x ");
-	printf("Reserved = %x ");
-	// TODO flags
-	printf("Flags = %x ");
-	printf("Window Size = %x \n");
-	printf("        Checksum = %x ");
-	printf("Urgent Pointer = %x \n");
-	printf("        Option %x \n");
+	printf("        Source Port = %d ", tcp_header.source);
+	tports[tcp_header.source] += 1;
+	printf("Destination Port = %d \n", tcp_header.dest);
+	rports[tcp_header.dest] += 1;
+	printf("        Sequence Number = %d \n", tcp_header.seq);
+	printf("        Acknowledment number = %d \n", tcp_header.ack_seq);
+	printf("        Data Offset = %x ", tcp_header.doff);
+	printf("Reserved = %x\n", tcp_header.res1);
+
+	// TODO Arrumar definição na Struct.	
+	printf("NS = %d CWR = %d ECE = %d URG = %d \n", 0, 0, 0,tcp_header.urg);
+	printf("ACK = %d PSH = %d RST = %d", tcp_header.ack, tcp_header.psh, tcp_header.rst);
+	printf("SYN = %d FIN = %d", tcp_header.syn, tcp_header.fin);
+
+	printf("Window Size = %d \n", tcp_header.window);
+	printf("        Checksum = %d ", tcp_header.check);
+	printf("Urgent Pointer = %d \n", tcp_header.urg_ptr);
+	
+
+	// TODO
+	//printf("        Option %x \n");
 
 }
 
 /*
  *
- * 0	        8          16			  31
+ *     8 Bytes    8 Bytes          16 Bytes	
  * -------------------------------------------------
  * |	Type   |   Code   |        Checksum        |
  * -------------------------------------------------
@@ -166,21 +296,46 @@ void get_tcp(unsigned char *buff, int offset){
  *
  */
 
-void get_icmp(unsigned char *buff, int offset){
+void get_icmp4(unsigned char *buff, int offset){
 	
-	printf("\n      >ICMP HEADER\n");
+	printf("\n      >ICMP4 HEADER\n");
+	count_icmp4 += 1;
 
-	struct icmphdr icmp_header;
+	struct icmphdr icmp4_header;
+	memcpy(&icmp4_header, &buff, sizeof(icmp4_header));
 
-	memcpy(&icmp_header, &buff, sizeof(icmp_header));
-
-	printf("      Type = %x ", icmp_header.type);
-	printf("Code = %x ", icmp_header.code);
-	printf("      Checksum = %x \n", icmp_header.checksum);
-
-	// TODO Rest of the header
+	printf("      Type = %d ", icmp4_header.type);
+	printf("Code = %d ", icmp4_header.code);
+	printf("      Checksum = %d \n", icmp4_header.checksum);
 
 }
+
+
+/*   	   
+ *    	   ICMP6 HEADER
+ *
+ *    0-7   8-15      16-31
+ * -----------------------------
+ * | Type | Code |   Checksum  |
+ * -----------------------------
+ * |        Message Body       |
+ * -----------------------------
+ *
+ */
+void get_icmp6(unsigned char *buff, int offset){
+
+	printf("\n      >ICMP6 HEADER\n");
+	count_icmp6 += 1;
+
+	struct icmp6_hdr icmp6_header;
+	memcpy(&icmp6_header,&buff[offset], sizeof(icmp6_header));
+
+	printf("      Type = %d \n", icmp6_header.icmp6_type);
+	printf("      Code = %d \n", icmp6_header.icmp6_code);
+	printf("      Checkum = %d \n", icmp6_header.icmp6_cksum);
+
+}
+
 
 /* 				IPV4 HEADER 
  *
@@ -205,6 +360,7 @@ void get_icmp(unsigned char *buff, int offset){
 void get_ipv4(unsigned char *buff, int offset){
 
 	printf("    >IPV4 HEADER\n");
+	count_ipv4 += 1;
 
 	struct ip ip_header;    	
 
@@ -225,25 +381,23 @@ void get_ipv4(unsigned char *buff, int offset){
 	printf("Protocol = %x ", ip_header.ip_p);
 	printf("Header Checksum = %x \n", ip_header.ip_sum);
 	
-	printf("    Source IP Address = %x \n", ip_header.ip_src.s_addr);
+	printf("    Source IP Address = %s \n", inet_ntoa(ip_header.ip_src));
+	printf("    Destination IP Address = %s \n", inet_ntoa(ip_header.ip_dst));	
 
-	printf("    Destination IP Address = %x \n", ip_header.ip_dst.s_addr);	
+	insert_ipv4(inet_ntoa(ip_header.ip_src), 0);
+	insert_ipv4(inet_ntoa(ip_header.ip_dst), 1);	
 
-	//printf("----\n");
-	//printf("ihl hex = %x\n",ip_header.ip_hl);
-	
-	//printf("ihl dec = %d\n",ip_header.ip_hl);
-	
-	//printf("offset sum = %d\n",ip_header.ip_hl + offset);
-	//printf("-------\n");
-	
+	//printf("Press Any Key to Continue\n");  
+	//		getchar(); 
+
+
 	offset += ip_header.ip_hl * 4;
 
 	//printf("%d - %x \n", ip_header.ip_p, ip_header.ip_p);
 		
 	switch(ip_header.ip_p){
 		case IPPROTO_ICMP:
-			get_icmp(buff, offset);
+			get_icmp4(buff, offset);
 			break;
 		case IPPROTO_TCP:
 			get_tcp(buff, offset);
@@ -254,18 +408,56 @@ void get_ipv4(unsigned char *buff, int offset){
 		default:
 			break;
 	}
-
-	// TODO Can I get manually a header size?
-	// TODO Can I instantiate ipv4 structure using the header size encountered?
-
 }
 
+
+/*
+ *		     IPv6 HEADER
+ * 0        4              12     16            24 	  31
+ * ---------------------------------------------------------
+ * |Version|Traffic Class |           Flow Label           |
+ * ---------------------------------------------------------
+ * |        Payload Length       | Next header | Hop Limit |
+ * ---------------------------------------------------------
+ * |                     Source Address       		 4x|
+ * ---------------------------------------------------------
+ * |                  Destination Address                4x|
+ * ---------------------------------------------------------
+ *
+ *
+ */
 void get_ipv6(unsigned char *buff, int offset){
 	
-	printf("    >IPv6. \n\n");
+	printf("    >IPv6. \n");
+	count_ipv6 += 1;
+
+	struct ip6_hdr ipv6_header;
+
+	memcpy(&ipv6_header, &buff[offset], sizeof(ipv6_header));	
+	
+        printf("    Version = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_flow);
+        printf("    Traffic Class = %x \n",1);
+	printf("    Flow Label = %x \n",1);
+	printf("    Payload Length = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_plen);	
+	printf("    Next Header = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt);
+	printf("    Hop Limit = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_hlim);
+	
+	//printf("    Source Address = %s \n", inet_ntoa((struct in6_addr)ipv6_header.ip6_src));
+	//printf("    Destination Address = %s \n", inet_ntoa(ipv6_header.ip6_dst));
+	// TODO IP	
+	
+
+	// TODO Ajustar offset
+
+	switch(ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt){
+		case IPPROTO_ICMPV6:
+			get_icmp6(buff, offset);
+			break;
+		default:
+			break;
+	}
 
 }
-
 
 /*
  * 		     ARP HEADER
@@ -305,10 +497,10 @@ void get_ipv6(unsigned char *buff, int offset){
  *
  *
  */
-
 void get_arp(unsigned char *buff, int offset){
 	
 	printf("    >ARP. \n");
+	count_arp += 1;
 
 	struct ether_arp arp_header;
 
@@ -345,6 +537,7 @@ void get_arp(unsigned char *buff, int offset){
 void get_ethernet(unsigned char *buff){
 	
 	printf(">ETHERNET HEADER\n");
+	count_ethernet += 1;
 
 	struct ether_header ethernet_header;
 	int offset = 0;
@@ -377,19 +570,17 @@ void get_ethernet(unsigned char *buff){
 			get_ipv6(buff, offset);
 			break;
 		case ETHERTYPE_ARP:
-			//printf("-------------------------------------------------------------------------->");
 			get_arp(buff, offset);
 			break;
 		default:
+			printf("Press Any Key to Continue\n");  
+			getchar(); 
 			printf("[Error] Unknown protocol. \n\n");
 	}
 
-	// TODO
-	//free(&header);
-
 }
 
-int process_data(unsigned char *buff){
+int process_packet(unsigned char *buff){
 	get_ethernet(buff);
 }
 
@@ -417,12 +608,17 @@ int main(int argc,char *argv[]){
 	ifr.ifr_flags |= IFF_PROMISC;
 	ioctl(sockd, SIOCSIFFLAGS, &ifr);
 
+	ipv4_listhead = NULL;
+
 	// recepcao de pacotes
 	while (1) {
 		printf("\n\n---------------------------------------------------------------------\n");
-		recv(sockd, (char *) &buff, sizeof(buff), 0x0);
-		// impress�o do conteudo - exemplo Endereco Destino e Endereco Origem
-		process_data(buff);		
-	}
+		recv(sockd, (char *) &buff, sizeof(buff), 0x0);	
+		process_packet(buff);		
+		
+		total_packets += 1;
 
+		print_statistics();
+	}
+		
 }
