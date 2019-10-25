@@ -1,20 +1,7 @@
 /*
  *
- * 			 PUCRS - Faculdade de Informática
- * 			Disciplina de Laboratório de Redes
- *
- * Trabalho 1 - 2017/1
- *
- * Autor: jovani Brasil	
+ * Author: jovani Brasil	
  * Email: jovanibrasil@gmail.com
- *
- * 
- * A ideia deste trabalho é implementar um sniffer capaz de capturar, mostrar 
- * e gerar estatísticas sobre os pacotes que trafegam na rede.
- *
- * Esta implementação partiu da implementação disponibilizada pela professora.
- *
- *
  *
  */
 
