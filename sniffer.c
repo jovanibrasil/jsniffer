@@ -571,8 +571,7 @@ int process_packet(unsigned char *buff){
 	get_ethernet(buff);
 }
 
-int main(int argc,char *argv[]){
-
+void run(){
 	unsigned char buff[BUFFSIZE];
 
   	int sockd;
@@ -588,7 +587,7 @@ int main(int argc,char *argv[]){
     	}
 
 	// O procedimento abaixo eh utilizado para "setar" a interface em modo promiscuo
-	strcpy(ifr.ifr_name, "eth0");
+	strcpy(ifr.ifr_name, "wlp6s0");
 	if(ioctl(sockd, SIOCGIFINDEX, &ifr) < 0)
 		printf("erro no ioctl!");
 	ioctl(sockd, SIOCGIFFLAGS, &ifr);
@@ -607,5 +606,8 @@ int main(int argc,char *argv[]){
 
 		print_statistics();
 	}
-		
+}
+
+int main(int argc,char *argv[]){
+	run();
 }
