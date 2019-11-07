@@ -1,1 +1,6 @@
 *.o
+.classpath
+.project
+.settings/
+
+target/
