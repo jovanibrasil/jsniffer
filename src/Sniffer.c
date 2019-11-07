@@ -5,7 +5,7 @@
  *
  */
 
-#include "HelloWorldJNI.h"
+#include "Sniffer.h"
 #include <jni.h>	
 
 #include <stdlib.h>
@@ -614,6 +614,6 @@ int main(int argc,char *argv[]){
 	run();
 }
 
-JNIEXPORT void JNICALL Java_HelloWorldJNI_run(JNIEnv *jbi, jobject obj) {
+JNIEXPORT void JNICALL Java_Sniffer_run(JNIEnv *jbi, jobject obj) {
 	run();
 }

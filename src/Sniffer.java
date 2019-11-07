@@ -1,22 +1,22 @@
 
-public class HelloWorldJNI {
+public class Sniffer {
 	static {
 		System.loadLibrary("native"); // loads the "native" shared library	
 	}
 
 	public static void main(String[] args) {
-		// new HelloWorldJNI().sayHello();
+		// new Sniffer().sayHello();
 		
-		// System.out.println("2 + 2 = " + new HelloWorldJNI().sumIntegers(2, 2));
-		// System.out.println(new HelloWorldJNI().sayHelloToMe("jovani", false));
+		// System.out.println("2 + 2 = " + new Sniffer().sumIntegers(2, 2));
+		// System.out.println(new Sniffer().sayHelloToMe("jovani", false));
 		
-		// HelloWorldJNI helloJni = new HelloWorldJNI();
+		// Sniffer helloJni = new Sniffer();
 		// helloJni.createUser("Jovani", 1000);
 		// UserData ud = new UserData();
 		// ud.name = "Jovani Brasil";
 		// ud.balance = 1000;
 		// System.out.println(helloJni.printUserData(ud));;
-		new HelloWorldJNI().run();
+		new Sniffer().run();
 		
 	}
 

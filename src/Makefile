@@ -1,18 +1,18 @@
 
 generate-headers:
-	javac -h . HelloWorldJNI.java
+	javac -h . Sniffer.java
 	
 compile:
-	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux HelloWorldJNI.cpp -o HelloWorldJNI.o
-	gcc -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux HelloWorldJNI.c -o HelloWorldJNI.o
+	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux Sniffer.cpp -o Sniffer.o
+	gcc -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux Sniffer.c -o Sniffer.o
 
 # Include the compiled code into a shared library	
 link:
-	#g++ -shared -fPIC -o libnative.so HelloWorldJNI.o -lc
-	gcc -shared -fPIC -o libnative.so HelloWorldJNI.o -lc
+	#g++ -shared -fPIC -o libnative.so Sniffer.o -lc
+	gcc -shared -fPIC -o libnative.so Sniffer.o -lc
 	
 run:
-	java -cp . -Djava.library.path=./ HelloWorldJNI
+	java -cp . -Djava.library.path=./ Sniffer
 	
 clean:
 	rm *.class *.so *.o	*.log
