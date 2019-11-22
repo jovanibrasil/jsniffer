@@ -15,6 +15,14 @@ extern "C" {
 JNIEXPORT void JNICALL Java_Sniffer_run
   (JNIEnv *, jobject);
 
+/*
+ * Class:     Sniffer
+ * Method:    getPrintBuffer
+ * Signature: ()[Ljava/lang/String;
+ */
+JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

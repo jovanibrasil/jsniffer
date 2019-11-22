@@ -614,6 +614,18 @@ int main(int argc,char *argv[]){
 	run();
 }
 
-JNIEXPORT void JNICALL Java_Sniffer_run(JNIEnv *jbi, jobject obj) {
+JNIEXPORT void JNICALL Java_Sniffer_run(JNIEnv *env, jobject obj) {
 	run();
 }
+
+JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer(JNIEnv *env, jobject obj){
+	jobjectArray strarr = (*env)->NewObjectArray(env, 5, 
+		(*env)->FindClass(env, "java/lang/String"), NULL);
+
+    for (int i = 0; i < 5; ++i){
+        (*env)->SetObjectArrayElement(env, strarr, i, (*env)->NewStringUTF(env, "Teste\n"));
+    }
+
+    return strarr;
+}
+

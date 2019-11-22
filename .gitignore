@@ -2,6 +2,7 @@
 .classpath
 .project
 .settings/
+*.so
 
 target/
 old/
