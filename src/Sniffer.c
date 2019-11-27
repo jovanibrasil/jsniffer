@@ -6,7 +6,7 @@
  */
 
 #include "Sniffer.h"
-#include <jni.h>	
+#include <jni.h>
 
 #include <stdlib.h>
 #include <stdio.h>
@@ -48,24 +48,26 @@ struct ipv4_node {
 	struct ipv4_node *next;
 };
 
-// Contadores de endereços
-struct ipv4_node *ipv4_listhead = NULL;
+struct statistics {
+    // Packages counters by type
+    int total_packets;
+    int count_ipv4;
+    int count_ipv6;
+    int count_udp;
+    int count_tcp;
+    int count_icmp4;
+    int count_icmp6;
+    int count_arp;
+    int count_ethernet;
+};
 
-// Contadores de pacotes
-int total_packets;
-int count_ipv4;	
-int count_ipv6;
-int count_udp;
-int count_tcp;
-int count_icmp4;
-int count_icmp6;
-int count_arp;
-int count_ethernet;
-
-// Contador de transmissão pelas portas 
+// Contador de transmissão pelas portas
 int tports[PORTS];
 // Contador de recepção pelas portas
 int rports[PORTS];
+
+struct statistics *stats = NULL;
+struct ipv4_node *ipv4_listhead = NULL;
 
 /*
  * 
@@ -134,14 +136,14 @@ void print_statistics(){
 	
 	// Percentuais de transmissão de diferentes tipos de pacotes.
 
-	printf("Total de pacotes capturados %d.\n", total_packets);
-	printf("Pacotes ARP: %d.\n", count_arp);
-	printf("Pacotes IPv4: %d.\n", count_ipv4);
-	printf("Pacotes IPv6: %d.\n", count_ipv6);
-	printf("Pacotes ICMPv4: %d.\n", count_icmp4);
-	printf("Pacotes ICMPv6: %d.\n", count_icmp6);
-	printf("Pacotes TCP: %d.\n", count_tcp);
-	printf("Pacotes UDP: %d.\n", count_udp);
+	printf("Total de pacotes capturados %d.\n", stats->total_packets);
+	printf("Pacotes ARP: %d.\n", stats->count_arp);
+	printf("Pacotes IPv4: %d.\n", stats->count_ipv4);
+	printf("Pacotes IPv6: %d.\n", stats->count_ipv6);
+	printf("Pacotes ICMPv4: %d.\n", stats->count_icmp4);
+	printf("Pacotes ICMPv6: %d.\n", stats->count_icmp6);
+	printf("Pacotes TCP: %d.\n", stats->count_tcp);
+	printf("Pacotes UDP: %d.\n", stats->count_udp);
 
 	// Protocolos de aplicações que mais enviaram e receberam pacotes.
 	int i = 0;
@@ -210,7 +212,7 @@ void print_values(unsigned  char *buff, int offset, int length){
 void get_udp(unsigned char *buff, int offset){
 	
 	printf("\n        >UDP HEADER\n");
-	count_udp += 1;
+	stats->count_udp += 1;
 
 	struct udphdr udp_header;
 	memcpy(&udp_header, &buff[offset], sizeof(udp_header));
@@ -246,7 +248,7 @@ void get_udp(unsigned char *buff, int offset){
 void get_tcp(unsigned char *buff, int offset){
 	
 	printf("\n        >TCP HEADER\n");
-	count_tcp += 1;
+	stats->count_tcp += 1;
 
 	struct tcphdr tcp_header;
 	memcpy(&tcp_header, &buff,sizeof(tcp_header));
@@ -289,7 +291,7 @@ void get_tcp(unsigned char *buff, int offset){
 void get_icmp4(unsigned char *buff, int offset){
 	
 	printf("\n      >ICMP4 HEADER\n");
-	count_icmp4 += 1;
+	stats->count_icmp4 += 1;
 
 	struct icmphdr icmp4_header;
 	memcpy(&icmp4_header, &buff, sizeof(icmp4_header));
@@ -315,7 +317,7 @@ void get_icmp4(unsigned char *buff, int offset){
 void get_icmp6(unsigned char *buff, int offset){
 
 	printf("\n      >ICMP6 HEADER\n");
-	count_icmp6 += 1;
+	stats->count_icmp6 += 1;
 
 	struct icmp6_hdr icmp6_header;
 	memcpy(&icmp6_header,&buff[offset], sizeof(icmp6_header));
@@ -350,7 +352,7 @@ void get_icmp6(unsigned char *buff, int offset){
 void get_ipv4(unsigned char *buff, int offset){
 
 	printf("    >IPV4 HEADER\n");
-	count_ipv4 += 1;
+	stats->count_ipv4 += 1;
 
 	struct ip ip_header;    	
 
@@ -419,7 +421,7 @@ void get_ipv4(unsigned char *buff, int offset){
 void get_ipv6(unsigned char *buff, int offset){
 	
 	printf("    >IPv6. \n");
-	count_ipv6 += 1;
+	stats->count_ipv6 += 1;
 
 	struct ip6_hdr ipv6_header;
 
@@ -490,7 +492,7 @@ void get_ipv6(unsigned char *buff, int offset){
 void get_arp(unsigned char *buff, int offset){
 	
 	printf("    >ARP. \n");
-	count_arp += 1;
+	stats->count_arp += 1;
 
 	struct ether_arp arp_header;
 
@@ -527,7 +529,7 @@ void get_arp(unsigned char *buff, int offset){
 void get_ethernet(unsigned char *buff){
 	
 	printf(">ETHERNET HEADER\n");
-	count_ethernet += 1;
+	stats->count_ethernet += 1;
 
 	struct ether_header ethernet_header;
 	int offset = 0;
@@ -577,6 +579,8 @@ int process_packet(unsigned char *buff){
 void run(){
 	unsigned char buff[BUFFSIZE];
 
+    stats = (struct statistics*) malloc(sizeof(struct statistics));
+
   	int sockd;
   	int on;
   	struct ifreq ifr;
@@ -589,7 +593,7 @@ void run(){
 		exit(1);
 	}
 
-	// O procedimento abaixo eh utilizado para "setar" a interface em modo promiscuo
+	// O procedimento abaixo eh utilizado para configurar a interface em modo promiscuo
 	strcpy(ifr.ifr_name, "wlp6s0");
 	if(ioctl(sockd, SIOCGIFINDEX, &ifr) < 0)
 		printf("erro no ioctl!");
@@ -604,7 +608,7 @@ void run(){
 		recv(sockd, (char *) &buff, sizeof(buff), 0x0);	
 		process_packet(buff);		
 		
-		total_packets += 1;
+		stats->total_packets += 1;
 
 		print_statistics();
 	}
@@ -627,5 +631,35 @@ JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer(JNIEnv *env, jobject 
     }
 
     return strarr;
+}
+
+JNIEXPORT jobject JNICALL Java_Sniffer_getStatistics(JNIEnv *env, jobject obj){
+
+    // Create the object of the class Statistics
+    jclass statisticsClass = (*env)->FindClass(env, "Statistics");
+    jobject statisticsData = (*env)->AllocObject(env, statisticsClass);
+
+    // Get the UserData fields to be set
+    jfieldID totalPacketsField = (*env)->GetFieldID(env, statisticsClass , "totalPackets", "I");
+    jfieldID countIpv4Field = (*env)->GetFieldID(env, statisticsClass , "countIpv4", "I");
+    jfieldID countIpv6Field = (*env)->GetFieldID(env, statisticsClass , "countIpv6", "I");
+    jfieldID countUdpField = (*env)->GetFieldID(env, statisticsClass , "countUdp", "I");
+    jfieldID countTcpField = (*env)->GetFieldID(env, statisticsClass , "countTcp", "I");
+    jfieldID countIcmp4Field = (*env)->GetFieldID(env, statisticsClass , "countIcmp4", "I");
+    jfieldID countIcmp6Field = (*env)->GetFieldID(env, statisticsClass , "countIcmp6", "I");
+    jfieldID countArpField = (*env)->GetFieldID(env, statisticsClass , "countArp", "I");
+    jfieldID countEthernetField = (*env)->GetFieldID(env, statisticsClass , "countEthernet", "I");
+
+    (*env)->SetIntField(env, statisticsData, totalPacketsField, stats->total_packets);
+    (*env)->SetIntField(env, statisticsData, countIpv4Field, stats->count_ipv4);
+    (*env)->SetIntField(env, statisticsData, countIpv6Field, stats->count_ipv6);
+    (*env)->SetIntField(env, statisticsData, countUdpField, stats->count_udp);
+    (*env)->SetIntField(env, statisticsData, countTcpField, stats->count_tcp);
+    (*env)->SetIntField(env, statisticsData, countIcmp4Field, stats->count_icmp4);
+    (*env)->SetIntField(env, statisticsData, countIcmp6Field, stats->count_icmp6);
+    (*env)->SetIntField(env, statisticsData, countArpField, stats->count_arp);
+    (*env)->SetIntField(env, statisticsData, countEthernetField, stats->count_ethernet);
+
+    return statisticsData;
 }
 

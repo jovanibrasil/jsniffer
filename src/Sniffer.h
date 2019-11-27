@@ -23,6 +23,14 @@ JNIEXPORT void JNICALL Java_Sniffer_run
 JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer
   (JNIEnv *, jobject);
 
+/*
+ * Class:     Sniffer
+ * Method:    getStatistics
+ * Signature: ()LStatistics;
+ */
+JNIEXPORT jobject JNICALL Java_Sniffer_getStatistics
+  (JNIEnv *, jobject);
+
 #ifdef __cplusplus
 }
 #endif

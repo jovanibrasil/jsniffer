@@ -30,12 +30,19 @@ public class SnifferFrame extends JFrame {
 	
 		Thread textAreaUpate = new Thread(() -> {
 			while (true) {
-				String[] buffer = sniffer.getPrintBuffer();
-				for (String string : buffer) {
-					System.out.println(string);
-					textArea.append(string);
-				};
-				textArea.append("Buffer size: " + buffer.length);
+//				String[] buffer = sniffer.getPrintBuffer();
+//				for (String string : buffer) {
+//					System.out.println(string);
+//					textArea.append(string);
+//				};
+//				textArea.append("Buffer size: " + buffer.length);
+				textArea.setText("");
+				textArea.append(sniffer.getStatistics().toString());
+				try {
+					Thread.sleep(500);
+				} catch (Exception e){
+
+				}
 			}
 		});
 		

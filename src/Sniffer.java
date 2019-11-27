@@ -28,5 +28,5 @@ public class Sniffer {
 	
 	public native void run();
 	public native String[] getPrintBuffer();
-	
+	public native Statistics getStatistics();
 }
