@@ -9,11 +9,15 @@ public class SnifferFrame extends JFrame {
 
 	private TextPanel textPanel;
 	private JButton btn;
+	private Toolbar toolbar;
 
 	public SnifferFrame(String title, Sniffer sniffer) {
 		super(title);
 		
 		setLayout(new BorderLayout()); // set layout manager
+
+        toolbar = new Toolbar();
+        toolbar.setDataListener(() -> textPanel.getContent());
 
 		textPanel = new TextPanel();
 		btn = new JButton("Start");
@@ -52,7 +56,8 @@ public class SnifferFrame extends JFrame {
 				textAreaUpate.start();
 			}
 		});
-		
+
+		add(toolbar, BorderLayout.NORTH);
 		add(textPanel, BorderLayout.CENTER);
 		add(btn, BorderLayout.SOUTH);
 		

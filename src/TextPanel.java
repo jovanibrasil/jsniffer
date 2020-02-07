@@ -20,4 +20,9 @@ public class TextPanel extends JPanel {
     public void clear() {
         textArea.setText("");
     }
+
+    public String getContent() {
+        return textArea.getText();
+    }
+
 }
