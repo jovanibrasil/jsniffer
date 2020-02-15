@@ -1,15 +1,20 @@
 /*
  *
- * Author: jovani Brasil	
+ * Author: Jovani Brasil
  * Email: jovanibrasil@gmail.com
  *
  */
 
+
+#ifdef JNI
 #include "Sniffer.h"
 #include <jni.h>
+#endif /* JNI */
+
 
 #include <stdlib.h>
 #include <stdio.h>
+#include <pthread.h>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
@@ -36,9 +41,18 @@
 #include <netinet/icmp6.h>
 #include <netinet/in.h> 
 #include <arpa/inet.h> 
-
+#include <semaphore.h>
 #define PORTS 65536
 #define BUFFSIZE 1518
+#define MAX_BUFFER_SIZE 300
+
+// Buffer node
+typedef struct BufferNode {
+    unsigned char *content;
+    int size;
+    int id;
+    struct BufferNode *next;
+} BufferNode;
 
 // Estrutura auxiliar para contagem de endereços
 struct ipv4_node {
@@ -66,8 +80,16 @@ int tports[PORTS];
 // Contador de recepção pelas portas
 int rports[PORTS];
 
+
 struct statistics *stats = NULL;
+/* Header */
 struct ipv4_node *ipv4_listhead = NULL;
+
+BufferNode *buffer_node_head = NULL;
+BufferNode *buffer_node_tail = NULL;
+int buffer_length = 0;
+int id = 0;
+sem_t mutex;
 
 /*
  * 
@@ -303,7 +325,7 @@ void get_icmp4(unsigned char *buff, int offset){
 }
 
 
-/*   	   
+/*
  *    	   ICMP6 HEADER
  *
  *    0-7   8-15      16-31
@@ -578,7 +600,7 @@ int process_packet(unsigned char *buff){
 
 void run(){
 	unsigned char buff[BUFFSIZE];
-
+    sem_init(&mutex, 0, 1);
     stats = (struct statistics*) malloc(sizeof(struct statistics));
 
   	int sockd;
@@ -589,7 +611,7 @@ void run(){
 	/* De um "man" para ver os parametros.*/
 	/* htons: converte um short (2-byte) integer para standard network byte order. */
 	if((sockd = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_ALL))) < 0) {
-		printf("Erro na criacao do socket.\n");
+		printf("An error occurred when opening the socket.\n");
 		exit(1);
 	}
 
@@ -601,30 +623,97 @@ void run(){
 	ifr.ifr_flags |= IFF_PROMISC;
 	ioctl(sockd, SIOCSIFFLAGS, &ifr);
 
-
+    int packetLen = 0;
 	// recepcao de pacotes
 	while (1) {
 		printf("\n\n---------------------------------------------------------------------\n");
-		recv(sockd, (char *) &buff, sizeof(buff), 0x0);	
-		process_packet(buff);		
-		
-		stats->total_packets += 1;
+		packetLen = recv(sockd, (char *) &buff, sizeof(buff), 0x0);
 
-		print_statistics();
+		if(packetLen >= 0) {
+		    id++;
+            sem_wait(&mutex);
+            stats->total_packets += 1;
+		    printf("Packet size: %i\n", packetLen);
+		    if(buffer_length == MAX_BUFFER_SIZE){
+		        printf("Removing package %d\n", buffer_node_head->id);
+		        BufferNode *old = buffer_node_head;
+		        buffer_node_head = buffer_node_head->next;
+		        free(old);
+		        buffer_length--;
+		    }
+
+            buffer_length++;
+		    if(buffer_node_tail == NULL) {
+                printf("Buffering first package ...\n");
+                buffer_node_tail = (BufferNode*) malloc(sizeof(BufferNode) + packetLen);
+                buffer_node_tail->id = id;
+                buffer_node_tail->next = NULL;
+                buffer_node_tail->size = packetLen;
+                buffer_node_tail->content = malloc(packetLen);
+                memcpy(buffer_node_tail->content, buff, packetLen);
+                buffer_node_head = buffer_node_tail;
+		    } else{
+                printf("Buffering package ...\n");
+                BufferNode *newNode = (BufferNode*) malloc(sizeof(BufferNode) + packetLen);
+                newNode->id = id;
+                newNode->size = packetLen;
+                newNode->next = NULL;
+                newNode->content = malloc(packetLen);
+                memcpy(newNode->content, buff, packetLen);
+                buffer_node_tail->next = newNode;
+                buffer_node_tail = newNode;
+                printf("Create package with id %d\n", buffer_node_tail->id);
+		    }
+            printf("Buffer length: %i\n", buffer_length);
+            sem_post(&mutex);
+		}
+
+		if(buffer_length == 6){
+		printf("1");
+            getPacketsFromBuffer(10);
+            printf("There are %d packets.\n", buffer_length);
+		}
+
+		//print_statistics();
 	}
+}
+
+void getPacketsFromBuffer(int quantity){
+    while(quantity > 1){
+        BufferNode *node = NULL;
+        sem_wait(&mutex);
+        if(buffer_length == 0) {
+            buffer_node_tail = NULL;
+            sem_post(&mutex);
+            break; // there are no packets to return
+        }
+        node = buffer_node_head;
+        buffer_node_head = buffer_node_head->next;
+        buffer_length--;
+        sem_post(&mutex);
+        // process package - convert
+        printf("Processing package id %d\n", node->id);
+        quantity--;
+        //process_packet(buff);
+        free(node); // free memory
+    }
 }
 
 int main(int argc,char *argv[]){
 	run();
 }
 
+
+
+#ifdef JNI
+
 JNIEXPORT void JNICALL Java_Sniffer_run(JNIEnv *env, jobject obj) {
-	run();
+    run();
 }
 
 JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer(JNIEnv *env, jobject obj){
-	jobjectArray strarr = (*env)->NewObjectArray(env, 5, 
-		(*env)->FindClass(env, "java/lang/String"), NULL);
+    jobjectArray strarr = (*env)->NewObjectArray(env, 5,
+        (*env)->FindClass(env, "java/lang/String"), NULL);
 
     for (int i = 0; i < 5; ++i){
         (*env)->SetObjectArrayElement(env, strarr, i, (*env)->NewStringUTF(env, "Teste\n"));
@@ -663,3 +752,4 @@ JNIEXPORT jobject JNICALL Java_Sniffer_getStatistics(JNIEnv *env, jobject obj){
     return statisticsData;
 }
 
+#endif /* JNI */

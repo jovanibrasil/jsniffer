@@ -13,7 +13,7 @@ public class Toolbar extends JPanel implements ActionListener {
     private DataListener dataListener;
 
     public Toolbar() {
-        saveButton = new JButton("Save Data");
+        saveButton = new JButton("Save");
         setLayout(new FlowLayout(FlowLayout.LEFT));
         add(saveButton);
         jFileChooser = new JFileChooser();
