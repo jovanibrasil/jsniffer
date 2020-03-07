@@ -13,6 +13,6 @@ public class Ipv4Header {
         return "Ipv4Header{" +
                 "totalLength=" + totalLength +
                 ", header=" + header +
-                '}';
+                "}\n";
     }
 }

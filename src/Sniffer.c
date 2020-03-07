@@ -282,7 +282,7 @@ jobject* get_udp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  * -------------------------------------------------------------------
  */
 
-void get_tcp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
+jobject* get_tcp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	
 	printf("\n        >TCP HEADER\n");
 	stats->count_tcp += 1;
@@ -290,12 +290,23 @@ void get_tcp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	struct tcphdr tcp_header;
 	memcpy(&tcp_header, &buff,sizeof(tcp_header));
 
-//	printf("        Source Port = %d ", tcp_header.source);
 	tports[tcp_header.source] += 1;
-//	printf("Destination Port = %d \n", tcp_header.dest);
 	rports[tcp_header.dest] += 1;
+
+//	printf("        Source Port = %d ", tcp_header.source);
+//	printf("Destination Port = %d \n", tcp_header.dest);
 //	printf("        Sequence Number = %d \n", tcp_header.seq);
 //	printf("        Acknowledment number = %d \n", tcp_header.ack_seq);
+
+
+//	printf("Window Size = %d \n", tcp_header.window);
+
+
+//	printf("        Checksum = %d ", tcp_header.check);
+//	printf("Urgent Pointer = %d \n", tcp_header.urg_ptr);
+
+
+
 //	printf("        Data Offset = %x ", tcp_header.doff);
 //	printf("Reserved = %x\n", tcp_header.res1);
 
@@ -303,15 +314,36 @@ void get_tcp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 //	printf("NS = %d CWR = %d ECE = %d URG = %d \n", 0, 0, 0,tcp_header.urg);
 //	printf("ACK = %d PSH = %d RST = %d", tcp_header.ack, tcp_header.psh, tcp_header.rst);
 //	printf("SYN = %d FIN = %d", tcp_header.syn, tcp_header.fin);
-//
-//	printf("Window Size = %d \n", tcp_header.window);
-//	printf("        Checksum = %d ", tcp_header.check);
-//	printf("Urgent Pointer = %d \n", tcp_header.urg_ptr);
-	
+
 
 	// TODO
 	//printf("        Option %x \n");
 
+    jclass cls = (*env)->FindClass(env, "TcpHeader");
+//    jmethodID constructor = (*env)->GetMethodID(env, cls, "<init>",
+//        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
+    jmethodID constructor = (*env)->GetMethodID(env, cls, "<init>",
+        "(IIIIIIIIIIIIIIIIII)V");
+
+    jobject *object = (*env)->NewObject(env, cls, constructor,
+          (int) tcp_header.source,
+          (int) tcp_header.dest,
+          (int) tcp_header.seq,
+          (int) tcp_header.ack_seq,
+          (int) tcp_header.doff,
+          (int) tcp_header.res1,
+          0, 0, 0,
+          (int) tcp_header.urg,
+          (int) tcp_header.ack,
+          (int) tcp_header.psh,
+          (int) tcp_header.rst,
+          (int) tcp_header.syn,
+          (int) tcp_header.fin,
+          (int) tcp_header.window,
+          (int) tcp_header.check,
+          (int) tcp_header.urg_ptr);
+
+    return object;
 }
 
 /*
@@ -429,28 +461,30 @@ jobject *get_ipv4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 //
 //
 
+    jclass clsipv4 = (*env)->FindClass(env, "Ipv4Header");
+    jmethodID constructorIpv4 = (*env)->GetMethodID(env, clsipv4, "<init>", "(ILHeader;)V");
+    jobject* o = NULL;
+
 	switch(ip_header.ip_p){
 		case IPPROTO_ICMP:
 			get_icmp4(buff, offset, env, obj);
 			break;
 		case IPPROTO_TCP:
-			get_tcp(buff, offset, env, obj);
-
+			o = get_tcp(buff, offset, env, obj);
 			break;
 		case IPPROTO_UDP:
-		    printf("--------_UDP---------");
-		    jobject* o = get_udp(buff, offset, env, obj);
-
-            jclass clsipv4 = (*env)->FindClass(env, "Ipv4Header");
-            jmethodID constructorIpv4 = (*env)->GetMethodID(env, clsipv4, "<init>", "(ILHeader;)V");
-            jobject *object = (*env)->NewObject(env, clsipv4, constructorIpv4,
-                  (int) ip_header.ip_len, // u_short (2 byte unsigned 0 - 65 535)
-                  o); // short (2 byte signed -32 768 - 32 767) -> short
-
-            return object;
+		    o = get_udp(buff, offset, env, obj);
+            break;
 		default:
 			break;
 	}
+
+	if(o){
+        return (*env)->NewObject(env, clsipv4, constructorIpv4,
+              (int) ip_header.ip_len, // u_short (2 byte unsigned 0 - 65 535)
+              o); // short (2 byte signed -32 768 - 32 767) -> short
+	}
+
 	return NULL;
 }
 
