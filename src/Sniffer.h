@@ -31,6 +31,14 @@ JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPrintBuffer
 JNIEXPORT jobject JNICALL Java_Sniffer_getStatistics
   (JNIEnv *, jobject);
 
+/*
+ * Class:     Sniffer
+ * Method:    getPacketsFromBuffer
+ * Signature: (I)[LIpv4Header;
+ */
+JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPacketsFromBuffer
+  (JNIEnv *, jobject, jint);
+
 #ifdef __cplusplus
 }
 #endif

@@ -1,4 +1,4 @@
-import java.awt.BorderLayout;
+import java.awt.*;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -39,8 +39,20 @@ public class SnifferFrame extends JFrame {
 //					textArea.append(string);
 //				};
 //				textArea.append("Buffer size: " + buffer.length);
-				textPanel.clear();
-				textPanel.appendText(sniffer.getStatistics().toString());
+				System.out.println("Getting packages from c sniffer ...");
+				Ipv4Header[] packs = sniffer
+						.getPacketsFromBuffer(5);
+				System.out.println("Buffer response size = " + packs.length);
+
+//				textPanel.clear();
+//				textPanel.appendText(sniffer.getStatistics().toString());
+
+				for (Ipv4Header h : packs){
+					if(h != null){
+						textPanel.appendText(h.toString());
+					}
+				}
+
 				try {
 					Thread.sleep(500);
 				} catch (Exception e){
@@ -61,7 +73,7 @@ public class SnifferFrame extends JFrame {
 		add(textPanel, BorderLayout.CENTER);
 		add(btn, BorderLayout.SOUTH);
 		
-		setSize(600, 500);
+		setSize(800, 600);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 		
