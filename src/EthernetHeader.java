@@ -18,6 +18,7 @@ public class EthernetHeader {
                 "destMac='" + destMac + '\'' +
                 ", sourceMac='" + sourceMac + '\'' +
                 ", etherType=" + etherType +
-                "}\n";
+                ", payload=" + payload +
+                '}';
     }
 }

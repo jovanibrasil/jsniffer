@@ -238,16 +238,15 @@ jobject* get_udp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	struct udphdr udp_header;
 	memcpy(&udp_header, &buff[offset], sizeof(udp_header));
 
-//	printf("        Source port = %d", udp_header.source);
 	tports[udp_header.source] += 1;
-//	printf("        Destination Port =  %d\n", udp_header.dest);
 	rports[udp_header.dest] += 1;
+
+//	printf("        Source port = %d", udp_header.source);
+//	printf("        Destination Port =  %d\n", udp_header.dest);
 //	printf("        Length = %d", udp_header.len);
 //	printf("        Checksum = %d", udp_header.check);
 
     jclass cls = (*env)->FindClass(env, "UdpHeader");
-//    jmethodID constructor = (*env)->GetMethodID(env, cls, "<init>",
-//        "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;I)V");
     jmethodID constructor = (*env)->GetMethodID(env, cls, "<init>",
         "(IIII)V");
 
@@ -357,7 +356,7 @@ jobject* get_tcp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  *
  */
 
-void get_icmp4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
+jobject* get_icmp4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	
 	printf("\n      >ICMP4 HEADER\n");
 	stats->count_icmp4 += 1;
@@ -368,6 +367,15 @@ void get_icmp4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 //	printf("      Type = %d ", icmp4_header.type);
 //	printf("Code = %d ", icmp4_header.code);
 //	printf("      Checksum = %d \n", icmp4_header.checksum);
+
+    jclass clsIcmp4 = (*env)->FindClass(env, "Icmp4Header");
+    jmethodID constructorIcmp4 = (*env)->GetMethodID(env, clsIcmp4,
+        "<init>", "(III)V");
+
+    return (*env)->NewObject(env, clsIcmp4, constructorIcmp4,
+                  (int) icmp4_header.type,
+                  (int) icmp4_header.code,
+                  (int) icmp4_header.checksum);
 
 }
 
@@ -383,7 +391,7 @@ void get_icmp4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  * -----------------------------
  *
  */
-void get_icmp6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
+jobject* get_icmp6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 
 	printf("\n      >ICMP6 HEADER\n");
 	stats->count_icmp6 += 1;
@@ -394,6 +402,16 @@ void get_icmp6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 //	printf("      Type = %d \n", icmp6_header.icmp6_type);
 //	printf("      Code = %d \n", icmp6_header.icmp6_code);
 //	printf("      Checkum = %d \n", icmp6_header.icmp6_cksum);
+
+
+    jclass clsIcmp6 = (*env)->FindClass(env, "Icmp6Header");
+    jmethodID constructorIcmp6 = (*env)->GetMethodID(env, clsIcmp6,
+        "<init>", "(III)V");
+
+    return (*env)->NewObject(env, clsIcmp6, constructorIcmp6,
+                  (int) icmp6_header.icmp6_type,
+                  (int) icmp6_header.icmp6_code,
+                  (int) icmp6_header.icmp6_cksum);
 
 }
 
@@ -441,48 +459,51 @@ jobject *get_ipv4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 //	printf("    Time To Live =  %x ", ip_header.ip_ttl);
 //	printf("Protocol = %x ", ip_header.ip_p);
 //	printf("Header Checksum = %x \n", ip_header.ip_sum);
-//
+
 //	printf("    Source IP Address = %s \n", inet_ntoa(ip_header.ip_src));
 //	printf("    Destination IP Address = %s \n", inet_ntoa(ip_header.ip_dst));
 
 	insert_ipv4(inet_ntoa(ip_header.ip_src), 0);
 	insert_ipv4(inet_ntoa(ip_header.ip_dst), 1);	
 
-	//printf("Press Any Key to Continue\n");  
-	//getchar(); 
-
-
 	offset += ip_header.ip_hl * 4;
 
-//    printf("----------------------------------------------");
-//    jclass cls = (*env)->FindClass(env, "UdpHeader");
-//    jmethodID c = (*env)->GetMethodID(env, cls, "<init>", "(IIII)V");
-//    jobject *udp = (*env)->NewObject(env, cls, c, 123, 123, 123, 123);
-//
-//
-
     jclass clsipv4 = (*env)->FindClass(env, "Ipv4Header");
-    jmethodID constructorIpv4 = (*env)->GetMethodID(env, clsipv4, "<init>", "(ILHeader;)V");
-    jobject* o = NULL;
+    jmethodID constructorIpv4 = (*env)->GetMethodID(env, clsipv4,
+        "<init>", "(IIIIIIIIIIILjava/lang/String;Ljava/lang/String;ILHeader;)V");
+    jobject* object = NULL;
 
 	switch(ip_header.ip_p){
 		case IPPROTO_ICMP:
-			get_icmp4(buff, offset, env, obj);
+			object = get_icmp4(buff, offset, env, obj);
 			break;
 		case IPPROTO_TCP:
-			o = get_tcp(buff, offset, env, obj);
+			object = get_tcp(buff, offset, env, obj);
 			break;
 		case IPPROTO_UDP:
-		    o = get_udp(buff, offset, env, obj);
+		    object = get_udp(buff, offset, env, obj);
             break;
 		default:
 			break;
 	}
 
-	if(o){
+	if(object){
         return (*env)->NewObject(env, clsipv4, constructorIpv4,
-              (int) ip_header.ip_len, // u_short (2 byte unsigned 0 - 65 535)
-              o); // short (2 byte signed -32 768 - 32 767) -> short
+              (int) ip_header.ip_v,
+              (int) ip_header.ip_hl, // internet header length
+              (int) ip_header.ip_tos, // dscp
+              0, // ecn
+              (int) ip_header.ip_len, // total length (header + data)
+              (int) ip_header.ip_id,
+              0, //flags
+              (int) ip_header.ip_off,
+              (int) ip_header.ip_ttl,
+              (int) ip_header.ip_p,
+              (int) ip_header.ip_sum,
+              (*env)->NewStringUTF(env, inet_ntoa(ip_header.ip_src)),
+              (*env)->NewStringUTF(env, inet_ntoa(ip_header.ip_dst)),
+              0, // options
+              object);
 	}
 
 	return NULL;
@@ -504,7 +525,7 @@ jobject *get_ipv4(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  *
  *
  */
-void get_ipv6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
+jobject* get_ipv6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	
 	printf("    >IPv6. \n");
 	stats->count_ipv6 += 1;
@@ -513,28 +534,50 @@ void get_ipv6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 
 	memcpy(&ipv6_header, &buff[offset], sizeof(ipv6_header));	
 	
-        printf("    Version = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_flow);
-        printf("    Traffic Class = %x \n",1);
-	printf("    Flow Label = %x \n",1);
-	printf("    Payload Length = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_plen);	
-	printf("    Next Header = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt);
-	printf("    Hop Limit = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_hlim);
+//    printf("    Version = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_flow);
+//    printf("    Traffic Class = %x \n",1);
+//	printf("    Flow Label = %x \n",1);
+//	printf("    Payload Length = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_plen);
+//	printf("    Next Header = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt);
+//	printf("    Hop Limit = %x \n", ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_hlim);
 	
 	//printf("    Source Address = %s \n", inet_ntoa((struct in6_addr)ipv6_header.ip6_src));
 	//printf("    Destination Address = %s \n", inet_ntoa(ipv6_header.ip6_dst));
 	// TODO IP	
-	
 
 	// TODO Ajustar offset
 
+    jclass clsipv6 = (*env)->FindClass(env, "Ipv6Header");
+    jmethodID constructorIpv6 = (*env)->GetMethodID(env, clsipv6,
+        "<init>", "(IIIIIILjava/lang/String;Ljava/lang/String;LHeader;)V");
+    jobject* object = NULL;
+
+    char src[INET6_ADDRSTRLEN], dst[INET6_ADDRSTRLEN];
+
+    inet_ntop(AF_INET6, &ipv6_header, src, sizeof(src));
+    inet_ntop(AF_INET6, &ipv6_header, dst, sizeof(dst));
+
 	switch(ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt){
 		case IPPROTO_ICMPV6:
-			get_icmp6(buff, offset, env, obj);
+			object = get_icmp6(buff, offset, env, obj);
 			break;
 		default:
 			break;
 	}
 
+	if(object){
+            return (*env)->NewObject(env, clsipv6, constructorIpv6,
+                  (int) ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_flow,
+                  (int) 0,
+                  (int) 0,
+                  (int) ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_plen,
+                  (int) ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_nxt,
+                  (int) ipv6_header.ip6_ctlun.ip6_un1.ip6_un1_hlim,
+                  (*env)->NewStringUTF(env, src),
+                  (*env)->NewStringUTF(env, dst),
+                  object);
+    }
+    return NULL;
 }
 
 /*
@@ -575,7 +618,7 @@ void get_ipv6(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  *
  *
  */
-void get_arp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
+jobject* get_arp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	
 	printf("    >ARP. \n");
 	stats->count_arp += 1;
@@ -595,6 +638,7 @@ void get_arp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
 	printf("    Target Hardware Address = %x \n", arp_header.arp_tha);
  	printf("    Target Protocol Address = %x \n", arp_header.arp_tpa);	
 
+    return NULL;
 }
 
 /*			ETHERNET HEADER
@@ -612,9 +656,9 @@ void get_arp(unsigned char *buff, int offset, JNIEnv *env, jobject obj){
  *
  */
 
-jobject *get_ethernet(unsigned char *buff, JNIEnv *env, jobject obj){
+jobject* get_ethernet(unsigned char *buff, JNIEnv *env, jobject obj){
 	
-	printf(">ETHERNET HEADER\n");
+//	printf(">ETHERNET HEADER\n");
 	stats->count_ethernet += 1;
 
 	struct ether_header ethernet_header;
@@ -622,43 +666,47 @@ jobject *get_ethernet(unsigned char *buff, JNIEnv *env, jobject obj){
 
 	memcpy(&ethernet_header, buff, sizeof(ethernet_header));
 
-	//print_values(buff, 0, 40);
+    char *dest = (char*)malloc(6 * sizeof(u_char));
+    char *source = (char*)malloc(6 * sizeof(u_char));
+
+    sprintf(dest, "%x:%x:%x:%x:%x:%x", buff[0],buff[1],buff[2],buff[3],buff[4],buff[5]);
+    sprintf(source, "%x:%x:%x:%x:%x:%x", buff[6],buff[7],buff[8],buff[9],buff[10],buff[11]);
 
 //	printf("MAC Destino: %x:%x:%x:%x:%x:%x \n", buff[0],buff[1],buff[2],buff[3],buff[4],buff[5]);
-	
-	// header.ether_dhost[i]
-		
 //	printf("MAC Origem:  %x:%x:%x:%x:%x:%x \n", buff[6],buff[7],buff[8],buff[9],buff[10],buff[11]);
-
-	//printf("Ether type: 0x%x%x \n", buff[12], buff[13]);
-
-	//printf("0x%04x --- (htons) 0x%04x \n\n", header.ether_type, htons(header.ether_type));
-
-//	printf("Ether Type: 0x%04x \n\n", htons(ethernet_header.ether_type));
-
+//  printf("0x%04x --- (htons) 0x%04x \n\n", header.ether_type, htons(header.ether_type));
 
 	offset += 14;
-	// IPv4 | IPv6 | ARP		
+
+    jclass clsEthernet = (*env)->FindClass(env, "EthernetHeader");
+    jmethodID constructorEthernet = (*env)->GetMethodID(env, clsEthernet,
+        "<init>", "(Ljava/lang/String;Ljava/lang/String;ILHeader;)V");
+    jobject* object = NULL;
 
 	switch (htons(ethernet_header.ether_type)){
 		case ETHERTYPE_IP:
-			return get_ipv4(buff, offset, env, obj);
+			object = get_ipv4(buff, offset, env, obj);
 			break;
 		case ETHERTYPE_IPV6:
-			get_ipv6(buff, offset, env, obj);
+			object = get_ipv6(buff, offset, env, obj);
 			break;
 		case ETHERTYPE_ARP:
-			get_arp(buff, offset, env, obj);
+			object = get_arp(buff, offset, env, obj);
 			break;
 		default:
-			// printf("Press Any Key to Continue\n");  
-			// getchar(); 
 			printf("[Error] Unknown protocol. \n\n");
+	}
+	if(object){
+        return (*env)->NewObject(env, clsEthernet, constructorEthernet,
+              (*env)->NewStringUTF(env, dest),
+              (*env)->NewStringUTF(env, source),
+              (int) ethernet_header.ether_type,
+              object);
 	}
     return NULL;
 }
 
-jobject *process_packet(unsigned char *buff, JNIEnv *env, jobject obj){
+jobject* process_packet(unsigned char *buff, JNIEnv *env, jobject obj){
 	return get_ethernet(buff, env, obj);
 }
 
@@ -755,7 +803,7 @@ JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPacketsFromBuffer(JNIEnv *env, jo
 
     //printf("Getting buffer with size %d. \n", (int) quantity);
     jobjectArray strarr = (*env)->NewObjectArray(env, (int)quantity,
-            (*env)->FindClass(env, "Ipv4Header"), NULL);
+            (*env)->FindClass(env, "EthernetHeader"), NULL);
 
     //printf("Buffer length %d\n", buffer_length);
     int idx = 0;
@@ -785,13 +833,14 @@ JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPacketsFromBuffer(JNIEnv *env, jo
        if(object){
            (*env)->SetObjectArrayElement(env, strarr, 0, object);
        }else{
-           printf("Not a UDP package\n");
+           printf("Not a Ethernet package\n");
        }
 
        free(node); // free memory
         pthread_mutex_unlock(&lock);
 
     }
+    printf("Returning ...");
     return strarr;
 }
 

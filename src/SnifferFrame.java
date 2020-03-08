@@ -19,8 +19,8 @@ public class SnifferFrame extends JFrame {
         toolbar = new Toolbar();
         toolbar.setDataListener(() -> logPanel.getContent());
 
-		DefaultListModel<Ipv4Header> ipv4HeaderDefaultListModel = new DefaultListModel<Ipv4Header>();
-		list = new CustomJList(ipv4HeaderDefaultListModel);
+		DefaultListModel<EthernetHeader> ethernetHeaderDefaultListModel = new DefaultListModel<>();
+		list = new CustomJList(ethernetHeaderDefaultListModel);
 		list.setCellRenderer(new JListCellRenderer());
 		list.setDetailsListener(text -> detailsPanel.setText(text));
 
@@ -44,17 +44,16 @@ public class SnifferFrame extends JFrame {
 //				};
 //				textArea.append("Buffer size: " + buffer.length);
 				System.out.println("Getting packages from c sniffer ...");
-				Ipv4Header[] packs = sniffer
+				EthernetHeader[] packs = sniffer
 						.getPacketsFromBuffer(5);
 				System.out.println("Buffer response size = " + packs.length);
 
 //				textPanel.clear();
 //				textPanel.appendText(sniffer.getStatistics().toString());
 
-				for (Ipv4Header h : packs){
+				for (EthernetHeader h : packs){
 					if(h != null){
-						logPanel.appendText(h.toString());
-						ipv4HeaderDefaultListModel.addElement(h);
+						ethernetHeaderDefaultListModel.addElement(h);
 					}
 				}
 

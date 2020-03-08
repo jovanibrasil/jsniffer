@@ -1,2 +1,1 @@
-public class Header {
-}
+public class Header {}

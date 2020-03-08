@@ -1,7 +1,7 @@
 generate-headers:
 	javac -h . Sniffer.java
 	javac SnifferFrame.java Main.java TcpHeader.java \
-	    UdpHeader.java Icmp4Header.java Icmp6Header.java EthernetHeader.java ArpHeader.java Ipv6Header.java
+	    UdpHeader.java Icmp4Header.java Icmp6Header.java EthernetHeader.java ArpHeader.java Ipv6Header.java Ipv4Header.java
 	
 compile:
 	#g++ -c -fPIC -I${JAVA_HOME}/include -I${JAVA_HOME}/include/linux Sniffer.cpp -o Sniffer.o

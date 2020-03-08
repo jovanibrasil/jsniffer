@@ -34,7 +34,7 @@ JNIEXPORT jobject JNICALL Java_Sniffer_getStatistics
 /*
  * Class:     Sniffer
  * Method:    getPacketsFromBuffer
- * Signature: (I)[LIpv4Header;
+ * Signature: (I)[LEthernetHeader;
  */
 JNIEXPORT jobjectArray JNICALL Java_Sniffer_getPacketsFromBuffer
   (JNIEnv *, jobject, jint);

@@ -3,11 +3,11 @@ import java.awt.*;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 
-public class CustomJList extends JList<Ipv4Header> {
+public class CustomJList extends JList<EthernetHeader> {
 
     private DetailsListener detailsListener;
 
-    public CustomJList(ListModel<Ipv4Header> listModel) {
+    public CustomJList(ListModel<EthernetHeader> listModel) {
         super(listModel);
         setMaximumSize(new Dimension(1280, 600));
 

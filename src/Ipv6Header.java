@@ -8,10 +8,11 @@ public class Ipv6Header extends Header {
     public int hopLimit;
     public String sourceAddress;
     public String destinationAddress;
+    public Header payload;
 
     public Ipv6Header(int version, int trafficClass, int flowLabel, int payloadLength,
                       int nextHeader, int hopLimit, String sourceAddress,
-                      String destinationAddress) {
+                      String destinationAddress, Header payload) {
         this.version = version;
         this.trafficClass = trafficClass;
         this.flowLabel = flowLabel;
@@ -20,6 +21,7 @@ public class Ipv6Header extends Header {
         this.hopLimit = hopLimit;
         this.sourceAddress = sourceAddress;
         this.destinationAddress = destinationAddress;
+        this.payload = payload;
     }
 
     @Override

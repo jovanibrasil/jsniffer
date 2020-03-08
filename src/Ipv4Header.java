@@ -1,18 +1,61 @@
 public class Ipv4Header extends Header {
 
+    public int version;
+    public int ihl; // internet header length
+    public int dscp;
+    public int ecn;
     public int totalLength;
+    public int identification;
+    public int flags;
+    public int fragmentOffset;
+    public int timeToLive;
+    public int protocol;
+    public int headerChecksum;
+    public String sourceIpAddress;
+    public String destIpAddress;
+    public int options; // if IHL > 5
     public Header payload;
 
-    public Ipv4Header(int totalLength, Header payload) {
+    public Ipv4Header(int version, int ihl, int dscp, int ecn, int totalLength,
+                      int identification, int flags, int fragmentOffset,
+                      int timeToLive, int protocol, int headerChecksum,
+                      String sourceIpAddress, String destIpAddress, int options,
+                      Header payload) {
+        this.version = version;
+        this.ihl = ihl;
+        this.dscp = dscp;
+        this.ecn = ecn;
         this.totalLength = totalLength;
+        this.identification = identification;
+        this.flags = flags;
+        this.fragmentOffset = fragmentOffset;
+        this.timeToLive = timeToLive;
+        this.protocol = protocol;
+        this.headerChecksum = headerChecksum;
+        this.sourceIpAddress = sourceIpAddress;
+        this.destIpAddress = destIpAddress;
+        this.options = options;
         this.payload = payload;
     }
 
     @Override
     public String toString() {
         return "Ipv4Header{" +
-                "totalLength=" + totalLength +
-                ", header=" + payload +
-                "}\n";
+                "version=" + version +
+                ", ihl=" + ihl +
+                ", dscp=" + dscp +
+                ", ecn=" + ecn +
+                ", totalLength=" + totalLength +
+                ", identification=" + identification +
+                ", flags=" + flags +
+                ", fragmentOffset=" + fragmentOffset +
+                ", timeToLive=" + timeToLive +
+                ", protocol=" + protocol +
+                ", headerChecksum=" + headerChecksum +
+                ", sourceIpAddress='" + sourceIpAddress + '\'' +
+                ", destIpAddress='" + destIpAddress + '\'' +
+                ", options=" + options +
+                ", payload=" + payload +
+                '}';
     }
 }

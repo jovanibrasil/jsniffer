@@ -7,6 +7,6 @@ public class Sniffer {
 	public native void run();
 	public native String[] getPrintBuffer();
 	public native Statistics getStatistics();
-	public native Ipv4Header[] getPacketsFromBuffer(int quantity);
+	public native EthernetHeader[] getPacketsFromBuffer(int quantity);
 
 }
