@@ -29,7 +29,6 @@ public class SnifferFrame extends JFrame {
 
 		Thread cSniffer = new Thread(() ->  {
 			try {
-				logPanel.appendText("Starting Sniffer ...\n");
 				sniffer.run();
 			} catch (Exception e) {
 				// TODO: handle exception
@@ -67,9 +66,10 @@ public class SnifferFrame extends JFrame {
 		toolbar.setSnifferListener(new SnifferListener() {
 			@Override
 			public void start() {
-				logPanel.appendText("Append data ...\n");
 				if(!cSniffer.isAlive()) {
+					logPanel.appendText("Starting Sniffer ...\n");
 					cSniffer.start();
+					logPanel.appendText("Sniffer started!\n");
 					textAreaUpdate.start();
 				}
 			}
@@ -88,6 +88,8 @@ public class SnifferFrame extends JFrame {
 		setSize(1280, 720);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
+
+		logPanel.appendText("Application started!\n");
 		
 	}
 	
