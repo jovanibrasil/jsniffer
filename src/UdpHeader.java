@@ -15,11 +15,11 @@ public class UdpHeader extends Header {
 
     @Override
     public String toString() {
-        return "UdpHeader{" +
-                "sourcePort=" + sourcePort +
-                ", destinationPort=" + destinationPort +
-                ", checkSum=" + checkSum +
-                ", length=" + length +
-                "}\n";
+        return "\n UdpHeader" +
+                "\n  sourcePort=" + sourcePort +
+                "\n  destinationPort=" + destinationPort +
+                "\n  checkSum=" + checkSum +
+                "\n  length=" + length +
+                "\n";
     }
 }

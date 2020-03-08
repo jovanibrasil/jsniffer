@@ -12,10 +12,10 @@ public class Icmp4Header extends Header {
 
     @Override
     public String toString() {
-        return "Icmp4Header{" +
-                "type=" + type +
-                ", code=" + code +
-                ", checksum=" + checksum +
-                "}\n";
+        return "\n Icmp4Header" +
+                "\n  type=" + type +
+                "\n  code=" + code +
+                "\n  checksum=" + checksum +
+                "\n";
     }
 }

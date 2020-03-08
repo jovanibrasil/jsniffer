@@ -10,7 +10,7 @@ public class DetailsPanel extends JPanel {
 
         setLayout(new BorderLayout());
         add(new JScrollPane(textArea), BorderLayout.CENTER);
-        setPreferredSize(new Dimension(300, 600));
+        setPreferredSize(new Dimension(400, 600));
     }
 
     public void appendText(String text){

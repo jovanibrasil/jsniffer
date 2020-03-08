@@ -40,22 +40,22 @@ public class Ipv4Header extends Header {
 
     @Override
     public String toString() {
-        return "Ipv4Header{" +
-                "version=" + version +
-                ", ihl=" + ihl +
-                ", dscp=" + dscp +
-                ", ecn=" + ecn +
-                ", totalLength=" + totalLength +
-                ", identification=" + identification +
-                ", flags=" + flags +
-                ", fragmentOffset=" + fragmentOffset +
-                ", timeToLive=" + timeToLive +
-                ", protocol=" + protocol +
-                ", headerChecksum=" + headerChecksum +
-                ", sourceIpAddress='" + sourceIpAddress + '\'' +
-                ", destIpAddress='" + destIpAddress + '\'' +
-                ", options=" + options +
-                ", payload=" + payload +
-                '}';
+        return "\n Ipv4Header" +
+                "\n  version=" + version +
+                "\n  ihl=" + ihl +
+                "\n  dscp=" + dscp +
+                "\n  ecn=" + ecn +
+                "\n  totalLength=" + totalLength +
+                "\n  identification=" + identification +
+                "\n  flags=" + flags +
+                "\n  fragmentOffset=" + fragmentOffset +
+                "\n  timeToLive=" + timeToLive +
+                "\n  protocol=" + protocol +
+                "\n  headerChecksum=" + headerChecksum +
+                "\n  sourceIpAddress='" + sourceIpAddress + '\'' +
+                "\n  destIpAddress='" + destIpAddress + '\'' +
+                "\n  options=" + options +
+                "\n  payload=" + payload +
+                '\n';
     }
 }

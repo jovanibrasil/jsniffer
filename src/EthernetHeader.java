@@ -14,11 +14,11 @@ public class EthernetHeader {
 
     @Override
     public String toString() {
-        return "EthernetHeader{" +
-                "destMac='" + destMac + '\'' +
-                ", sourceMac='" + sourceMac + '\'' +
-                ", etherType=" + etherType +
-                ", payload=" + payload +
-                '}';
+        return "EthernetHeader" +
+                "\n destMac='" + destMac + '\'' +
+                "\n sourceMac='" + sourceMac + '\'' +
+                "\n etherType=" + etherType +
+                "\n" + payload +
+                "\n";
     }
 }

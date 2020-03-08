@@ -12,10 +12,10 @@ public class Icmp6Header {
 
     @Override
     public String toString() {
-        return "Icmp6Header{" +
-                "type=" + type +
-                ", code=" + code +
-                ", checksum=" + checksum +
-                "}\n";
+        return "\n Icmp6Header" +
+                "\n  type=" + type +
+                "\n  code=" + code +
+                "\n  checksum=" + checksum +
+                "\n";
     }
 }

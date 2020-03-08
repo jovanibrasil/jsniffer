@@ -26,15 +26,15 @@ public class Ipv6Header extends Header {
 
     @Override
     public String toString() {
-        return "Ipv6Header{" +
-                "version=" + version +
-                ", trafficClass=" + trafficClass +
-                ", flowLabel=" + flowLabel +
-                ", payloadLength=" + payloadLength +
-                ", nextHeader=" + nextHeader +
-                ", hopLimit=" + hopLimit +
-                ", sourceAddress='" + sourceAddress + '\'' +
-                ", destinationAddress='" + destinationAddress + '\'' +
-                "}\n";
+        return "\n Ipv6Header" +
+                "\n  version=" + version +
+                "\n  trafficClass=" + trafficClass +
+                "\n  flowLabel=" + flowLabel +
+                "\n  payloadLength=" + payloadLength +
+                "\n  nextHeader=" + nextHeader +
+                "\n  hopLimit=" + hopLimit +
+                "\n  sourceAddress='" + sourceAddress + '\'' +
+                "\n  destinationAddress='" + destinationAddress + '\'' +
+                "\n";
     }
 }

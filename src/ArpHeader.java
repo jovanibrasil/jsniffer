@@ -25,16 +25,16 @@ public class ArpHeader extends Header {
 
     @Override
     public String toString() {
-        return "ArpHeader{" +
-                "htype=" + htype +
-                ", ptype=" + ptype +
-                ", hlen=" + hlen +
-                ", plen=" + plen +
-                ", oper=" + oper +
-                ", sha=" + sha +
-                ", spa=" + spa +
-                ", tha=" + tha +
-                ", tpa=" + tpa +
-                "}\n";
+        return "\n ArpHeader" +
+                "\n  htype=" + htype +
+                "\n  ptype=" + ptype +
+                "\n  hlen=" + hlen +
+                "\n  plen=" + plen +
+                "\n  oper=" + oper +
+                "\n  sha=" + sha +
+                "\n  spa=" + spa +
+                "\n  tha=" + tha +
+                "\n  tpa=" + tpa +
+                "\n";
     }
 }

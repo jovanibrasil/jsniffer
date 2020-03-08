@@ -48,25 +48,25 @@ public class TcpHeader extends Header {
 
     @Override
     public String toString() {
-        return "TcpHeader{" +
-                "sourcePort=" + sourcePort +
-                ", destinationPort=" + destinationPort +
-                ", \nsequenceNumber=" + sequenceNumber +
-                ", \nacknowledgmentNumber=" + acknowledgmentNumber +
-                ", dataOffset=" + dataOffset +
-                ", reserved=" + reserved +
-                ", ns=" + ns +
-                ", cwr=" + cwr +
-                ", ece=" + ece +
-                ", ugr=" + ugr +
-                ", ack=" + ack +
-                ", psh=" + psh +
-                ", rst=" + rst +
-                ", syn=" + syn +
-                ", fin=" + fin +
-                ", windowSize=" + windowSize +
-                ", \ncheckSum=" + checkSum +
-                ", urgentPointer=" + urgentPointer +
-                "}\n";
+        return "\n TcpHeader" +
+                "\n  sourcePort=" + sourcePort +
+                "\n  destinationPort=" + destinationPort +
+                "\n  sequenceNumber=" + sequenceNumber +
+                "\n  acknowledgmentNumber=" + acknowledgmentNumber +
+                "\n  dataOffset=" + dataOffset +
+                "\n  reserved=" + reserved +
+                "\n  ns=" + ns +
+                "\n  cwr=" + cwr +
+                "\n  ece=" + ece +
+                "\n  ugr=" + ugr +
+                "\n  ack=" + ack +
+                "\n  psh=" + psh +
+                "\n  rst=" + rst +
+                "\n  syn=" + syn +
+                "\n  fin=" + fin +
+                "\n  windowSize=" + windowSize +
+                "\n  checkSum=" + checkSum +
+                "\n  urgentPointer=" + urgentPointer +
+                "\n";
     }
 }
