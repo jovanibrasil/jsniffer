@@ -1,18 +1,18 @@
-public class Ipv4Header {
+public class Ipv4Header extends Header {
 
-    protected int totalLength;
-    protected Header header;
+    public int totalLength;
+    public Header payload;
 
-    public Ipv4Header(int totalLength, Header header) {
+    public Ipv4Header(int totalLength, Header payload) {
         this.totalLength = totalLength;
-        this.header = header;
+        this.payload = payload;
     }
 
     @Override
     public String toString() {
         return "Ipv4Header{" +
                 "totalLength=" + totalLength +
-                ", header=" + header +
+                ", header=" + payload +
                 "}\n";
     }
 }

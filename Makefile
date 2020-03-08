@@ -12,7 +12,7 @@ link:
 	gcc -shared -fPIC -o libnative.so Sniffer.o -lc
 
 clean:
-	rm *.class *.so *.o	*.log
+	rm *.class *.so *.o	*.log -f
 
 build: generate-headers compile link
 

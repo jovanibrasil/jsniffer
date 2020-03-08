@@ -1,25 +1,25 @@
 public class TcpHeader extends Header {
 
-    int sourcePort;
-    int destinationPort;
-    int sequenceNumber;
-    int acknowledgmentNumber; // if ACK set
+    public int sourcePort;
+    public int destinationPort;
+    public int sequenceNumber;
+    public int acknowledgmentNumber; // if ACK set
 
-    int dataOffset;
-    int reserved;
-    int ns;
-    int cwr;
-    int ece;
-    int ugr;
-    int ack;
-    int psh;
-    int rst;
-    int syn;
-    int fin;
-    int windowSize;
+    public int dataOffset;
+    public int reserved;
+    public int ns;
+    public int cwr;
+    public int ece;
+    public int ugr;
+    public int ack;
+    public int psh;
+    public int rst;
+    public int syn;
+    public int fin;
+    public int windowSize;
 
-    int checkSum;
-    int urgentPointer; // if urg set
+    public int checkSum;
+    public int urgentPointer; // if urg set
 
     // options // if dataOffset > 5. // Padded at the end with 0 if necessary
 

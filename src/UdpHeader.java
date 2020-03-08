@@ -1,9 +1,9 @@
 public class UdpHeader extends Header {
 
-    int sourcePort;
-    int destinationPort;
-    int checkSum;
-    int length;
+    public int sourcePort;
+    public int destinationPort;
+    public int checkSum;
+    public int length;
 
     public UdpHeader(int sourcePort, int destinationPort,
                      int checkSum, int length) {
