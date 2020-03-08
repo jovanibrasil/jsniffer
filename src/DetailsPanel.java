@@ -1,16 +1,16 @@
 import javax.swing.*;
 import java.awt.*;
 
-public class TextPanel extends JPanel {
+public class DetailsPanel extends JPanel {
 
     private JTextArea textArea;
 
-    public TextPanel() {
+    public DetailsPanel() {
         this.textArea = new JTextArea();
 
         setLayout(new BorderLayout());
         add(new JScrollPane(textArea), BorderLayout.CENTER);
-        setPreferredSize(new Dimension(1280, 110));
+        setPreferredSize(new Dimension(300, 600));
     }
 
     public void appendText(String text){
@@ -23,6 +23,10 @@ public class TextPanel extends JPanel {
 
     public String getContent() {
         return textArea.getText();
+    }
+
+    public void setText(String text) {
+        this.textArea.setText(text);
     }
 
 }

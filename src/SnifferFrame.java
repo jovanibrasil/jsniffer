@@ -1,15 +1,15 @@
 import java.awt.*;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.*;
 
 public class SnifferFrame extends JFrame {
 
 	private static final long serialVersionUID = 1557630126395106359L;
 
-	private TextPanel textPanel;
-	private JButton btn;
+	private TextPanel logPanel;
 	private Toolbar toolbar;
+	private DetailsPanel detailsPanel;
+	private CustomJList list;
 
 	public SnifferFrame(String title, Sniffer sniffer) {
 		super(title);
@@ -17,21 +17,25 @@ public class SnifferFrame extends JFrame {
 		setLayout(new BorderLayout()); // set layout manager
 
         toolbar = new Toolbar();
-        toolbar.setDataListener(() -> textPanel.getContent());
+        toolbar.setDataListener(() -> logPanel.getContent());
 
-		textPanel = new TextPanel();
-		btn = new JButton("Start");
-		
+		DefaultListModel<Ipv4Header> ipv4HeaderDefaultListModel = new DefaultListModel<Ipv4Header>();
+		list = new CustomJList(ipv4HeaderDefaultListModel);
+		list.setCellRenderer(new JListCellRenderer());
+		list.setDetailsListener(text -> detailsPanel.setText(text));
+
+		logPanel = new TextPanel();
+		detailsPanel = new DetailsPanel();
+
 		Thread cSniffer = new Thread(() ->  {
 			try {
-				textPanel.appendText("Starting Sniffer ...\n");
+				logPanel.appendText("Starting Sniffer ...\n");
 				sniffer.run();
 			} catch (Exception e) {
 				// TODO: handle exception
 			}
 		} );
-	
-		Thread textAreaUpate = new Thread(() -> {
+		Thread textAreaUpdate = new Thread(() -> {
 			while (true) {
 //				String[] buffer = sniffer.getPrintBuffer();
 //				for (String string : buffer) {
@@ -49,7 +53,8 @@ public class SnifferFrame extends JFrame {
 
 				for (Ipv4Header h : packs){
 					if(h != null){
-						textPanel.appendText(h.toString());
+						logPanel.appendText(h.toString());
+						ipv4HeaderDefaultListModel.addElement(h);
 					}
 				}
 
@@ -60,20 +65,28 @@ public class SnifferFrame extends JFrame {
 				}
 			}
 		});
-		
-		btn.addActionListener(e -> {
-			textPanel.appendText("Append data ...\n");
-			if(!cSniffer.isAlive()) {
-				cSniffer.start();
-				textAreaUpate.start();
+		toolbar.setSnifferListener(new SnifferListener() {
+			@Override
+			public void start() {
+				logPanel.appendText("Append data ...\n");
+				if(!cSniffer.isAlive()) {
+					cSniffer.start();
+					textAreaUpdate.start();
+				}
+			}
+
+			@Override
+			public void stop() {
+
 			}
 		});
 
 		add(toolbar, BorderLayout.NORTH);
-		add(textPanel, BorderLayout.CENTER);
-		add(btn, BorderLayout.SOUTH);
+		add(detailsPanel, BorderLayout.EAST);
+		add(new JScrollPane(list), BorderLayout.CENTER);
+		add(logPanel, BorderLayout.SOUTH);
 		
-		setSize(800, 600);
+		setSize(1280, 720);
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		setVisible(true);
 		
