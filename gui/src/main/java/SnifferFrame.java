@@ -67,9 +67,9 @@ public class SnifferFrame extends JFrame {
 			@Override
 			public void start() {
 				if(!cSniffer.isAlive()) {
-					logPanel.appendText("Starting Sniffer ...\n");
+					logPanel.appendText("Starting com.jovani.Sniffer ...\n");
 					cSniffer.start();
-					logPanel.appendText("Sniffer started!\n");
+					logPanel.appendText("com.jovani.Sniffer started!\n");
 					textAreaUpdate.start();
 				}
 			}

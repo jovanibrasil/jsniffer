@@ -1,10 +1,10 @@
-public class Icmp6Header {
+public class Icmp4Header extends Header {
 
     public int type;
     public int code;
     public int checksum;
 
-    public Icmp6Header(int type, int code, int checksum) {
+    public Icmp4Header(int type, int code, int checksum) {
         this.type = type;
         this.code = code;
         this.checksum = checksum;
@@ -12,7 +12,7 @@ public class Icmp6Header {
 
     @Override
     public String toString() {
-        return "\n Icmp6Header" +
+        return "\n com.jovani.Icmp4Header" +
                 "\n  type=" + type +
                 "\n  code=" + code +
                 "\n  checksum=" + checksum +

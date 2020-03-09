@@ -40,7 +40,7 @@ public class Ipv4Header extends Header {
 
     @Override
     public String toString() {
-        return "\n Ipv4Header" +
+        return "\n com.jovani.Ipv4Header" +
                 "\n  version=" + version +
                 "\n  ihl=" + ihl +
                 "\n  dscp=" + dscp +

@@ -13,7 +13,7 @@ public class Statistics {
 
     @Override
     public String toString() {
-        return "Statistics{" +
+        return "com.jovani.Statistics{" +
                 "total_packets=" + totalPackets +
                 ", \n   count_ipv4=" + countIpv4 +
                 ", \n   count_ipv6=" + countIpv6 +

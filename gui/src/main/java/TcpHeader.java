@@ -48,7 +48,7 @@ public class TcpHeader extends Header {
 
     @Override
     public String toString() {
-        return "\n TcpHeader" +
+        return "\n com.jovani.TcpHeader" +
                 "\n  sourcePort=" + sourcePort +
                 "\n  destinationPort=" + destinationPort +
                 "\n  sequenceNumber=" + sequenceNumber +

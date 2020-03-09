@@ -26,7 +26,7 @@ public class Ipv6Header extends Header {
 
     @Override
     public String toString() {
-        return "\n Ipv6Header" +
+        return "\n com.jovani.Ipv6Header" +
                 "\n  version=" + version +
                 "\n  trafficClass=" + trafficClass +
                 "\n  flowLabel=" + flowLabel +

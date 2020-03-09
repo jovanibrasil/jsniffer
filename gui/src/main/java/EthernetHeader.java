@@ -14,7 +14,7 @@ public class EthernetHeader {
 
     @Override
     public String toString() {
-        return "EthernetHeader" +
+        return "com.jovani.EthernetHeader" +
                 "\n destMac='" + destMac + '\'' +
                 "\n sourceMac='" + sourceMac + '\'' +
                 "\n etherType=" + etherType +

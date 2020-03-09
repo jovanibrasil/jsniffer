@@ -25,7 +25,7 @@ public class ArpHeader extends Header {
 
     @Override
     public String toString() {
-        return "\n ArpHeader" +
+        return "\n com.jovani.ArpHeader" +
                 "\n  htype=" + htype +
                 "\n  ptype=" + ptype +
                 "\n  hlen=" + hlen +

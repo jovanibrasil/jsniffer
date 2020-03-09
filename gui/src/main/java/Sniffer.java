@@ -1,7 +1,14 @@
+import java.io.File;
+
 public class Sniffer {
 
 	static {
-		System.loadLibrary("native"); // loads the "native" shared library	
+		try {
+			File lib = new File("libs/" + System.mapLibraryName("core"));
+			System.load(lib.getAbsolutePath());
+		} catch (UnsatisfiedLinkError err) {
+			// todo show message
+		}
 	}
 
 	public native void run();
